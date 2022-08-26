@@ -1,10 +1,23 @@
-import React from "react";
 import "./styles/index.scss";
 import "./autocomplete-input/AutoCompleteTextField.css";
+
+import React from "react";
+import PropTypes from 'prop-types';
 import { classSelectors } from "./utils/selectors";
 import { Tag } from "./components/Tag";
-
 import { AutocompleteTextField as TextField , AutoCompleteList } from "./autocomplete-input/AutoCompleteTextField"
+
+
+const autocompleteDefault = {
+    disabled: false,
+    maxOptions: 6,
+    options: {"":["aa", "ab", "abc", "abcd"]},
+    regex: '^[a-zA-Z0-9_\\-]+$',
+    requestOnlyIfNoOptions: true,
+    spaceRemovers: [',', '.', '?', '!'],
+    spacer: " ",
+    trigger:[""]
+};
 
 class ReactTagInput extends React.Component {
 
@@ -24,8 +37,9 @@ class ReactTagInput extends React.Component {
     onInputKeyDown = (e) => {
         const { input } = this.state;
         const { validator, removeOnBackspace } = this.props;
-        // On enter
-        if (e.keyCode === 13) {
+
+        // On enter and comma
+        if (e.keyCode === 13 || e.keyCode === 188 || e.keyCode === 9 ) {
             // Prevent form submission if tag input is nested in <form>
             e.preventDefault();
             // If input is blank, do nothing
@@ -85,6 +99,7 @@ class ReactTagInput extends React.Component {
         const maxTagsReached = maxTags !== undefined ? tags.length >= maxTags : false;
         const isEditable = readOnly ? false : (editable || false);
         const showInput = !readOnly && !maxTagsReached;
+        const autoComplete = {...autocompleteDefault, ...this.props.autocomplete };
 
         return (
             <div className={classSelectors.wrapper}>
@@ -112,17 +127,27 @@ class ReactTagInput extends React.Component {
                     onChange={this.onInputChange}
                     onKeyDown={this.onInputKeyDown}
 
-                    enableRenderAutocomplete={true}
-                    onRenderAutocompleteList={(e)=>{ 
-                        this.setState({renderAutocompleteList:e}) 
-                    }}
-                    trigger={[""]} 
-                    options={{"": ["aa", "ab", "abc", "abcd", "abc"] }} 
+                    // enableRenderAutocomplete={true}
+                    // onRenderAutocompleteList={(e)=>{ 
+                    //     this.setState({renderAutocompleteList:e}) 
+                    // }}
+
+                    disabled = {autoComplete.disabled}
+                    maxOptions = {autoComplete.maxOptions}
+                    regex = {autoComplete.regex}
+                    requestOnlyIfNoOptions = {autoComplete.requestOnlyIfNoOptions}
+                    spaceRemovers = {autoComplete.spaceRemovers}
+                    spacer = {autoComplete.spacer}
+ 
+                    trigger={autoComplete.trigger} 
+                    options={autoComplete.options} 
+
+                    isTabKeyDownEvent={this.props.isTabKeyDownEvent}
+                    TabKeyDownInterval={this.props.TabKeyDownInterval} 
                 />
             }
 
             {/* <AutoCompleteList data={this.state.renderAutocompleteList} /> */}
-
             {/*
                 <input
                 ref={this.inputRef}
@@ -140,6 +165,22 @@ class ReactTagInput extends React.Component {
     }
 
 }
+
+
+ReactTagInput.defaultProps = {
+    tags: [],
+    onChange: (tags) => {},
+    placeholder: "Types and press enter",
+    maxTags: 10,
+    editable: true,
+    readOnly: false,
+    removeOnBackspace: true,
+    validator: undefined,
+
+    autocomplete: autocompleteDefault,
+    isTabKeyDownEvent: false,
+    TabKeyDownInterval: 110
+};
 
 
 export default ReactTagInput;

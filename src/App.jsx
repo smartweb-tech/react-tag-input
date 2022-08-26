@@ -11,6 +11,8 @@ const settings = {
   readOnly: false,
   removeOnBackspace: true,
   validator: undefined,
+
+  isTabKeyDownEvent: true
 };
 
 

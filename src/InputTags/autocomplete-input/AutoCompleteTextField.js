@@ -48,6 +48,9 @@ const propTypes = {
   passThroughEnter: PropTypes.bool,
   onRenderAutocompleteList:PropTypes.func,
   enableRenderAutocomplete: PropTypes.bool,
+
+  isTabKeyDownEvent:PropTypes.bool,
+  TabKeyDownInterval:PropTypes.number
 };
 
 const defaultProps = {
@@ -75,7 +78,10 @@ const defaultProps = {
   passThroughEnter: false,
   
   onRenderAutocompleteList: ()=>{ },
-  enableRenderAutocomplete: false
+  enableRenderAutocomplete: false,
+
+  isTabKeyDownEvent: false,
+  TabKeyDownInterval: 0 
 };
 
 class AutocompleteTextField extends React.Component {
@@ -323,10 +329,10 @@ class AutocompleteTextField extends React.Component {
         case KEY_ENTER:
         case KEY_RETURN:
           if (!passThroughEnter) { event.preventDefault(); }
-          this.handleSelection(selection);
+          this.handleSelection(selection, event );
           break;
         case KEY_TAB:
-          this.handleSelection(selection);
+          this.handleSelection(selection , event );
           break;
         default:
           onKeyDown(event);
@@ -343,7 +349,7 @@ class AutocompleteTextField extends React.Component {
     this.handleRenderAutocompleteList();
   }
 
-  handleSelection(idx) {
+  handleSelection(idx, eventKeyEvent= false ) {
     const { spacer, onSelect, changeOnSelect } = this.props;
     const {
       matchStart, matchLength, options, trigger,
@@ -366,6 +372,16 @@ class AutocompleteTextField extends React.Component {
     this.updateCaretPosition(part1.length + changedStr.length + 1);
 
     this.enableSpaceRemovers = true;
+
+    if( eventKeyEvent != null && this.props.isTabKeyDownEvent ){
+      if( eventKeyEvent?.keyCode === KEY_TAB || eventKeyEvent?.keyCode === KEY_RETURN ){
+        setTimeout(function(){
+          this.props.onKeyDown(eventKeyEvent);
+          this.refInput?.current?.focus();
+        }.bind(this), this.props.TabKeyDownInterval );
+      }
+    }
+
     this.handleRenderAutocompleteList();
   }
 
